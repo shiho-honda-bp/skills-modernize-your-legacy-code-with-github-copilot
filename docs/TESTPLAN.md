@@ -1,30 +1,30 @@
-# 学生口座システム テスト計画
+# Student Account System Test Plan
 
-本テスト計画は、現行COBOLアプリの業務ロジックおよび実装挙動を検証し、Node.js移行の前後でステークホルダーが期待結果を確認できるようにすることを目的とします。
+This test plan validates the current COBOL business logic and implementation behavior so stakeholders can confirm expected outcomes before and during migration to Node.js.
 
-| テストケースID | テストケース説明 | 事前条件 | テスト手順 | 期待結果 | 実際の結果 | ステータス（合格/不合格） | コメント |
+| Test Case ID | Test Case Description | Pre-conditions | Test Steps | Expected Result | Actual Result | Status (Pass/Fail) | Comments |
 |---|---|---|---|---|---|---|---|
-| TC-001 | アプリ起動とメニュー表示の確認 | アプリがコンパイル済みで実行可能であること。 | 1. アプリを起動する。<br>2. 初期画面を確認する。 | メニューに 1 残高照会、2 入金、3 出金、4 終了 が表示される。1-4 の選択入力を求められる。 | TBD | TBD | エントリポイントとユーザー操作フローを確認。 |
-| TC-002 | 初期残高（デフォルト残高）の確認 | 新規セッションでアプリを起動すること（新しいプロセス）。 | 1. アプリを起動する。<br>2. 選択肢 1（残高照会）を入力する。 | 残高が 001000.00（数値として 1000.00）で表示される。 | TBD | TBD | メモリ上の初期状態を確認。 |
-| TC-003 | 残高照会で残高が変化しないことの確認 | アプリ稼働中で、残高が既知であること（例: 1000.00）。 | 1. 選択肢 1 を入力する。<br>2. 再度、選択肢 1 を入力する。 | 2回とも同じ残高が表示される。照会操作でデータ更新は発生しない。 | TBD | TBD | TOTAL 操作の読み取り専用挙動を確認。 |
-| TC-004 | 入金で残高が増加することの確認 | アプリ稼働中で、現在残高が既知であること（例: 1000.00）。 | 1. 選択肢 2（入金）を入力する。<br>2. 金額 250.50 を入力する。<br>3. 選択肢 1 で残高を確認する。 | 入金成功メッセージが表示される。新残高は旧残高 + 250.50（例: 1250.50）となる。 | TBD | TBD | CREDIT 経路とセッション内永続（メモリ保持）を確認。 |
-| TC-005 | 残高が十分な場合に出金で残高が減少することの確認 | アプリ稼働中で、現在残高が出金額より大きいこと（例: 1000.00）。 | 1. 選択肢 3（出金）を入力する。<br>2. 金額 200.00 を入力する。<br>3. 選択肢 1 で残高を確認する。 | 出金成功メッセージが表示される。新残高は旧残高 - 200.00（例: 800.00）となる。 | TBD | TBD | DEBIT 成功経路を確認。 |
-| TC-006 | 残高不足時に出金が拒否されることの確認 | アプリ稼働中で、現在残高が既知であること（例: 1000.00）。 | 1. 選択肢 3 を入力する。<br>2. 金額 1000.01 を入力する。<br>3. 選択肢 1 で残高を確認する。 | 残高不足メッセージが表示される。残高は変更されない（本例では 1000.00 のまま）。 | TBD | TBD | 重要業務ルール（オーバードラフト不可）を確認。 |
-| TC-007 | 残高と同額の出金が許可されることの確認 | アプリ稼働中で、残高が既知であること（例: 1000.00）。 | 1. 選択肢 3 を入力する。<br>2. 残高と同額の 1000.00 を入力する。<br>3. 選択肢 1 を入力する。 | 残高 >= 出金額のため出金成功。新残高は 0.00 になる。 | TBD | TBD | 比較条件の境界値テスト。 |
-| TC-008 | 不正なメニュー入力のハンドリング確認 | アプリがメニュー入力待ち状態であること。 | 1. 不正な選択肢を入力する（例: 0、5、9）。<br>2. 応答を確認する。 | 不正選択の案内メッセージが表示される。アプリは終了せずメニューループに戻る。 | TBD | TBD | メインメニューの防御的分岐処理を確認。 |
-| TC-009 | 終了操作でループとプログラムが終了することの確認 | アプリがメニュー入力待ち状態であること。 | 1. 選択肢 4（終了）を入力する。 | 終了メッセージが表示され、プロセスが終了する。 | TBD | TBD | 制御された終了挙動を確認。 |
-| TC-010 | 同一セッション内で複数操作後に状態が保持されることの確認 | 新規起動直後のアプリであること。 | 1. 初期残高を確認する。<br>2. 300.00 を入金する。<br>3. 50.00 を出金する。<br>4. 残高を確認する。 | 最終残高は 初期残高 + 300.00 - 50.00（例: 1250.00）となる。 | TBD | TBD | DataProgram の read/write 連携を確認。 |
-| TC-011 | アプリ再起動でメモリ保持データが初期化されることの確認 | 残高を変更したセッションを一度終了してから再起動すること。 | 1. アプリ起動後に入金する（例: +500）。<br>2. アプリを終了する。<br>3. アプリを再起動する。<br>4. 残高を確認する。 | 再起動後の残高はデフォルトの 1000.00 に戻る。 | TBD | TBD | 現実装の制約（DB/ファイル永続化なし）を明確化。 |
-| TC-012 | 0金額入金の挙動確認 | アプリ稼働中で、残高が既知であること。 | 1. 選択肢 2 を入力する。<br>2. 金額 0.00 を入力する。<br>3. 残高を確認する。 | 処理は完了し、残高は変化しない。 | TBD | TBD | 無操作トランザクションの業務意図確認に有用。 |
-| TC-013 | 0金額出金の挙動確認 | アプリ稼働中で、残高が既知であること。 | 1. 選択肢 3 を入力する。<br>2. 金額 0.00 を入力する。<br>3. 残高を確認する。 | 処理は完了し、残高は変化しない。 | TBD | TBD | 出金ロジックの境界値ケース。 |
-| TC-014 | 入金時の負数入力挙動確認（現実装の特性把握） | アプリ稼働中で、残高が既知であること。 | 1. 選択肢 2 を入力する。<br>2. 実行環境が受け付ける場合、負数（例: -100.00）を入力する。<br>3. 残高を確認する。 | 現行コードには負数の明示バリデーションがない。実際の挙動を記録し、ステークホルダー期待値と整合させる。 | TBD | TBD | 移行要件定義のための特性テスト。期待ポリシーは業務側で確認。 |
-| TC-015 | 出金時の負数入力挙動確認（現実装の特性把握） | アプリ稼働中で、残高が既知であること。 | 1. 選択肢 3 を入力する。<br>2. 実行環境が受け付ける場合、負数（例: -100.00）を入力する。<br>3. 残高を確認する。 | 現行コードには負数の明示バリデーションがない。実際の挙動を記録し、ステークホルダー期待値と整合させる。 | TBD | TBD | Node.js 実装での入力検証ルール定義に有用。 |
-| TC-016 | 小数精度の挙動確認 | アプリ稼働中で、残高が既知であること。 | 1. 小数2桁の金額を入金する（例: 10.25）。<br>2. 小数2桁の金額を出金する（例: 0.10）。<br>3. 残高を確認する。 | 金額計算が PIC 9(6)V99 に整合した小数2桁精度で一貫して処理される。 | TBD | TBD | Node.js 移行時の金額フォーマット基準確認。 |
-| TC-017 | 桁上限付近の大きな値の挙動確認 | 新規起動直後のアプリであること。 | 1. PIC 9(6)V99 の実用上限に近づくまで入金する。<br>2. さらに上限超過が想定される入金を試行する。 | 桁境界での挙動（受理、切り捨て、エラー等）を観測・記録し、必要な業務ポリシーを確定する。 | TBD | TBD | 安全な移行のための重要な特性テスト。現行実装に明示的なオーバーフロー防止はない。 |
+| TC-001 | Verify application startup and menu display | Application is compiled and runnable. | 1. Start application.<br>2. Observe first screen. | Menu is displayed with options 1 View Balance, 2 Credit Account, 3 Debit Account, 4 Exit. Prompt asks for choice 1-4. | TBD | TBD | Confirms entry point and user interaction flow. |
+| TC-002 | Verify default opening balance | Fresh application session (new process start). | 1. Start application.<br>2. Enter choice 1 (View Balance). | Current balance is displayed as 001000.00 (numeric default 1000.00). | TBD | TBD | Confirms initial state from in-memory storage. |
+| TC-003 | Verify balance inquiry does not change balance | Application running with known balance (for example 1000.00). | 1. Enter choice 1.<br>2. Enter choice 1 again. | Same balance value is shown both times. No data mutation occurs for view operation. | TBD | TBD | Validates read-only behavior of TOTAL operation. |
+| TC-004 | Verify credit operation increases balance | Application running, current balance known (for example 1000.00). | 1. Enter choice 2 (Credit Account).<br>2. Enter amount 250.50.<br>3. Enter choice 1 to view balance. | Credit success message is shown. New balance is previous balance + 250.50 (for example 1250.50). | TBD | TBD | Validates CREDIT path and persistence within session. |
+| TC-005 | Verify debit operation decreases balance when funds are sufficient | Application running, current balance known and greater than debit amount (for example 1000.00). | 1. Enter choice 3 (Debit Account).<br>2. Enter amount 200.00.<br>3. Enter choice 1 to view balance. | Debit success message is shown. New balance is previous balance - 200.00 (for example 800.00). | TBD | TBD | Validates DEBIT success path. |
+| TC-006 | Verify debit is blocked when funds are insufficient | Application running, current balance known (for example 1000.00). | 1. Enter choice 3.<br>2. Enter amount 1000.01.<br>3. Enter choice 1 to view balance. | Message indicates insufficient funds. Balance remains unchanged (still 1000.00 in example). | TBD | TBD | Core business rule: no overdraft allowed. |
+| TC-007 | Verify exact-balance debit is allowed | Application running with known balance (for example 1000.00). | 1. Enter choice 3.<br>2. Enter amount exactly 1000.00.<br>3. Enter choice 1. | Debit succeeds because balance is greater than or equal to amount. New balance becomes 0.00. | TBD | TBD | Boundary test for comparison rule. |
+| TC-008 | Verify invalid menu choice handling | Application running at menu prompt. | 1. Enter an invalid choice (for example 0, 5, or 9).<br>2. Observe response. | Message shows invalid choice guidance. Application returns to menu loop without exiting. | TBD | TBD | Validates defensive handling in main menu evaluate branch. |
+| TC-009 | Verify exit operation terminates loop and program | Application running at menu prompt. | 1. Enter choice 4 (Exit). | Goodbye message is displayed and process ends. | TBD | TBD | Confirms controlled termination behavior. |
+| TC-010 | Verify state persistence across multiple operations in same session | Application running from fresh start. | 1. View starting balance.<br>2. Credit 300.00.<br>3. Debit 50.00.<br>4. View balance. | Final balance equals opening balance + 300.00 - 50.00 (for example 1250.00). | TBD | TBD | Confirms DataProgram read/write interactions across calls. |
+| TC-011 | Verify in-memory storage resets on application restart | Complete one session that changes balance, then restart app. | 1. Start app and credit amount (for example +500).<br>2. Exit app.<br>3. Start app again.<br>4. View balance. | Balance is reset to default opening balance 1000.00 after restart. | TBD | TBD | Documents current implementation limit (no persistent database/file storage). |
+| TC-012 | Verify zero-value credit handling | Application running with known balance. | 1. Enter choice 2.<br>2. Enter amount 0.00.<br>3. View balance. | Operation completes; balance remains unchanged. | TBD | TBD | Useful to confirm business intent for no-op transactions. |
+| TC-013 | Verify zero-value debit handling | Application running with known balance. | 1. Enter choice 3.<br>2. Enter amount 0.00.<br>3. View balance. | Operation completes; balance remains unchanged. | TBD | TBD | Useful boundary case for debit logic. |
+| TC-014 | Verify negative amount behavior for credit (current implementation characterization) | Application running with known balance. | 1. Enter choice 2.<br>2. Attempt negative amount (for example -100.00) if input is accepted by runtime.<br>3. View balance. | Current code has no explicit negative-value validation. Record observed runtime behavior and align with stakeholder expectation. | TBD | TBD | This is a characterization test for migration requirements; expected policy should be confirmed by business. |
+| TC-015 | Verify negative amount behavior for debit (current implementation characterization) | Application running with known balance. | 1. Enter choice 3.<br>2. Attempt negative amount (for example -100.00) if input is accepted by runtime.<br>3. View balance. | Current code has no explicit negative-value validation. Record observed runtime behavior and align with stakeholder expectation. | TBD | TBD | Helps define future validation rules in Node.js implementation. |
+| TC-016 | Verify decimal precision behavior | Application running with known balance. | 1. Credit amount with two decimals (for example 10.25).<br>2. Debit amount with two decimals (for example 0.10).<br>3. View balance. | Balance arithmetic keeps two-decimal monetary precision consistent with PIC 9(6)V99 format. | TBD | TBD | Confirms money-format handling for migration baseline. |
+| TC-017 | Verify large value near field limit | Application running from fresh start. | 1. Apply credits to approach maximum representable value for PIC 9(6)V99.<br>2. Attempt additional credit beyond practical limit. | Observe and record behavior at numeric boundaries (accept, truncate, or error), then confirm required business policy. | TBD | TBD | Important characterization for safe migration; current app has no explicit overflow guard logic. |
 
-## ステークホルダー検証時の実施メモ
+## Execution Notes for Stakeholder Validation
 
-- 各テストは統制されたセッションで実施し、コンソール出力を証跡として保存する。
-- 残高を変更するテストは、次ケース実施前にアプリ再起動するか、開始残高を明示する。
-- 実施時に「実際の結果」と「ステータス（合格/不合格）」を記録する。
-- 特性テスト（TC-014、TC-015、TC-017）は、現行挙動の把握と Node.js 書き換え時の目標ルール定義を支援するために含めている。
+- Run each test in a controlled session and capture console output evidence.
+- For tests that modify balance, either restart the app before next test or explicitly define the starting balance.
+- Mark Actual Result and Status during execution with stakeholders.
+- Characterization tests (TC-014, TC-015, TC-017) are intentionally included to capture current behavior and support clear target rules for the Node.js rewrite.
